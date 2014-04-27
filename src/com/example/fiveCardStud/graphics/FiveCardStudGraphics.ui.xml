@@ -1,0 +1,13 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+  xmlns:g="urn:import:com.google.gwt.user.client.ui">
+  <g:VerticalPanel>
+    <g:HorizontalPanel height="100px" ui:field="playerAreaW"/>
+    <g:HorizontalPanel height="100px" ui:field="playerAreaB"/>
+    <g:HorizontalPanel height="100px" ui:field="playerAreaG" />
+    <g:HorizontalPanel height="100px" ui:field="playerAreaR"/>
+    <g:HorizontalPanel height="100px" ui:field="playerAreaY"/>
+    <g:Label ui:field='roundInfoSpan'>Keep your ducks</g:Label>
+    <g:Label ui:field='pool'>in a row</g:Label>
+  </g:VerticalPanel>
+</ui:UiBinder>
