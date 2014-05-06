@@ -1,7 +1,5 @@
 package org.fivecardstud.graphics;
 
-import java.util.Timer;
-import java.util.TimerTask;
 import org.fivecardstud.client.FiveCardStudLogic;
 import org.fivecardstud.client.FiveCardStudPresenter;
 import org.game_api.GameApi;
@@ -21,6 +19,7 @@ import com.googlecode.mgwt.dom.client.event.tap.TapHandler;
 import com.google.gwt.animation.client.Animation;
 import com.google.gwt.user.client.Element;
 import java.math.BigDecimal;
+import com.google.gwt.user.client.Timer;
 
 public class FiveCardStudEntryPoint implements EntryPoint {
 	IteratingPlayerContainer container;
@@ -37,11 +36,14 @@ public class FiveCardStudEntryPoint implements EntryPoint {
 
 	      @Override
 	      public void sendUpdateUI(UpdateUI updateUI) {
+	    	  	final UpdateUI _updateUI = updateUI;
+	    	  	System.out.println("calling updateUi in game.sendUpdateUI");
 	        fiveCardStudPresenter.updateUI(updateUI);
+	        
 	      }
 	    };
 	    container = new IteratingPlayerContainer(game, 5);
-	    FiveCardStudGraphics fiveCardStudGraphics = new FiveCardStudGraphics();
+	    FiveCardStudGraphics fiveCardStudGraphics = new FiveCardStudGraphics(container);
 		fiveCardStudPresenter = new FiveCardStudPresenter(fiveCardStudGraphics, container);
 		final ListBox playerSelect = new ListBox();
 		    playerSelect.addItem(msg.whitePlayer());
@@ -58,13 +60,13 @@ public class FiveCardStudEntryPoint implements EntryPoint {
 		            : container.getPlayerIds().get(selectedIndex);
 		        container.updateUi(playerId);
 		      }
-		    });
+		    }); 
 	    FlowPanel flowPanel = new FlowPanel();
 	    flowPanel.add(fiveCardStudGraphics);
-	    flowPanel.add(playerSelect);
+	  //  flowPanel.add(playerSelect);
 	    RootPanel.get("mainDiv").add(flowPanel);
 	    container.sendGameReady();
-	    System.out.println("in entrypoint playerId " + container.getPlayerIds().get(2));
+	    System.out.println("calling container.updateUi in entrypoint");
 	    container.updateUi(container.getPlayerIds().get(2)); 
   }
 }

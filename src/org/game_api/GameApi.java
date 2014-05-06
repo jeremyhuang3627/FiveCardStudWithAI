@@ -147,6 +147,7 @@ public final class GameApi {
             lastGameState.getStateForPlayerId(playerId), lastMove, lastMovePlayerId,
             gameState.getPlayerIdToNumberOfTokensInPot()));
       }
+      System.out.println("updateUi in gameApi sendMakeMove " + updateUiPlayerId);
       updateUi(updateUiPlayerId);
     }
 

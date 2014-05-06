@@ -78,16 +78,16 @@ public class FiveCardStudLogic {
   public void checkMoveIsLegal(VerifyMove verifyMove)
   {
 	  List<Operation> lastMove = verifyMove.getLastMove();
-	  System.out.println("Last move");
-	  System.out.println(lastMove);
+	  //System.out.println("Last move");
+	 // System.out.println(lastMove);
 	  Map<String, Object> lastState = verifyMove.getLastState();
 	//  System.out.println(lastState.get('W'));
 	  List<Operation> expectedOperations = getExpectedOperations(
 		        lastState, lastMove, verifyMove.getPlayerIds(),verifyMove.getLastMovePlayerId(),"" + DEALERID);
-	  System.out.println("Expected Operation");
-	  System.out.println(expectedOperations);
-	  System.out.println("Last move");
-	  System.out.println(lastMove);
+	  //System.out.println("Expected Operation");
+	  //System.out.println(expectedOperations);
+	  //System.out.println("Last move");
+	  //System.out.println(lastMove);
 	  check(expectedOperations.equals(lastMove), expectedOperations, lastMove);
   }
   
@@ -106,7 +106,7 @@ public class FiveCardStudLogic {
 	  operation.add(new Set(STAGE,PUTBIGANTE));
 	  int newAmt = money - anteAmt;
 	  Map<String,Object> playerMove = new HashMap<>();
-	  System.out.println("putBigAnte bet " + anteAmt);
+	  //System.out.println("putBigAnte bet " + anteAmt);
 	  playerMove.put(BET,anteAmt);
 	  playerMove.put(MONEY,newAmt);
 	  playerMove.put(HAND,Lists.newArrayList());
@@ -131,7 +131,7 @@ public class FiveCardStudLogic {
 	  operation.add(new Set(STAGE,PUTSMALLANTE));
 	  int newAmt = money - anteAmt;
 	  Map<String,Object> playerMove = new HashMap<>();
-	  System.out.println("putSmallAnte bet " + anteAmt);
+	  //System.out.println("putSmallAnte bet " + anteAmt);
 	  playerMove.put(BET,anteAmt);
 	  playerMove.put(MONEY,newAmt);
 	  playerMove.put(HAND,Lists.newArrayList());
@@ -147,12 +147,17 @@ public class FiveCardStudLogic {
 	  int money =(Integer)((Map)state.players.get(playerString)).get(MONEY);  // current amount of money that the player have
 	  int nextTurnId = 0;
 	  int thisTurnId = 0;
+	  //.out.println("state in betMove" );
+	  
 	  if (state.stage == BET){
 		  nextTurnId = (Integer.parseInt(state.nextTurn) - 42 -1 +5 ) % playerIds.size() + 42;
 		  thisTurnId = Integer.parseInt(state.nextTurn);
 	  }else if(state.stage == DEAL || state.stage == INITDEAL){
 		  nextTurnId = (Integer.parseInt(state.nextTurn) - 42 - 1 +5) % playerIds.size() + 42; // left of the big blind player id start from 1
 		  thisTurnId = Integer.parseInt(state.nextTurn);
+	  }else if(state.stage == BETEND){
+		  nextTurnId = 42;
+		  thisTurnId = 44;
 	  }
 
 	  if(thisTurnId == Integer.parseInt(state.big)){
@@ -200,8 +205,8 @@ public class FiveCardStudLogic {
 	  for(int i=0;i<playerIds.size();i++){
 		  String playerString = playerIndexToString(playerIds.get(i),playerIds);
 		  Map<String,Object> playerState = (Map)state.players.get(playerString);
-		  System.out.println(playerString + " bet " + (Integer)playerState.get(BET));
-		  System.out.println("betTotal is " + betTotal);
+		 // System.out.println(playerString + " bet " + (Integer)playerState.get(BET));
+		  //System.out.println("betTotal is " + betTotal);
 		  betTotal += (Integer)playerState.get(BET);
 		  List<Integer> cards = (List<Integer>)playerState.get(HAND);
 		  if(cards == null)
@@ -234,13 +239,12 @@ public class FiveCardStudLogic {
 	  check(dealerId.equals(state.dealer));
 	  int currentCardMax = playerIds.size() * 5;
 	  int topCardIndex = state.currentCard;
-	  check(topCardIndex < currentCardMax);
 	  int betTotal = 0;
 	  for(int i=0;i<playerIds.size();i++){
 		  String playerString = playerIndexToString(playerIds.get(i), playerIds);
 		  Map<String,Object> playerState = (Map)state.players.get(playerString);
 		  betTotal += (Integer)playerState.get(BET);
-		  System.out.println("initDealMove playerString  " + playerString + " Bet " + (Integer)playerState.get(BET) + " betTotal " + betTotal );
+		 // System.out.println("initDealMove playerString  " + playerString + " Bet " + (Integer)playerState.get(BET) + " betTotal " + betTotal );
 		  List<Integer> cards = Lists.newArrayList();
 		  topCardIndex ++;
 		  cards.add(topCardIndex); // deal one card
@@ -252,7 +256,7 @@ public class FiveCardStudLogic {
 	  }
 	  topCardIndex ++;
 	  int pot = state.pot;
-	  System.out.println("initDealMove pot " + pot + " betTotal " + betTotal);
+	  //System.out.println("initDealMove pot " + pot + " betTotal " + betTotal);
 	  pot += betTotal;
 	  operation.add(new Set(POT,pot));
 	  operation.add(new Set(CURRENTCARD,topCardIndex));
@@ -288,7 +292,7 @@ public class FiveCardStudLogic {
   }
   
   int compareTwoPlayer(Map.Entry<String,Object> pairs1,Map.Entry<String,Object> pairs2,List<Optional<Card>> cards){
-	  System.out.println("Comparing " + pairs1.getKey() + " and " + pairs2.getKey());
+	 // System.out.println("Comparing " + pairs1.getKey() + " and " + pairs2.getKey());
 	  String playerString1 = pairs1.getKey();
 	  Map<String,Object> player = (Map)pairs1.getValue();
 	  List<Card> playerCards1 = cardIndexesToCard((List<Integer>)player.get(HAND),cards);
@@ -310,9 +314,9 @@ public class FiveCardStudLogic {
   int compareTwoHand(List<Card> cardHand1,List<Card> cardHand2)
   {
 	  Map<String, Object> type1 = checkType(cardHand1);
-	  System.out.println("type1 is " + type1.get("type"));
+	 // System.out.println("type1 is " + type1.get("type"));
 	  Map<String, Object> type2 = checkType(cardHand2);
-	  System.out.println("type2 is " + type2.get("type"));
+	 // System.out.println("type2 is " + type2.get("type"));
 	  
 	  int res = 0; //default is zero i.e. two hands are the same rank
 	  if(type1.get("type")== type2.get("type"))
@@ -530,15 +534,15 @@ public class FiveCardStudLogic {
   public List<Operation> getExpectedOperations(
 	      Map<String, Object> lastApiState, List<Operation> lastMove, List<String> playerIds,String lastMovePlayerId,String dealerId) {
 	  if(lastApiState.isEmpty()){
-		  System.out.println("Initial Move logic");
-		  System.out.println("lastMovePlayerId " + lastMovePlayerId + " dealerId " + dealerId);
+		//  System.out.println("Initial Move logic");
+		//  System.out.println("lastMovePlayerId " + lastMovePlayerId + " dealerId " + dealerId);
 		  check(lastMovePlayerId.equals(dealerId));
 		  return getInitialMove(playerIds,dealerId);
 	  }
 	  
 	  FiveCardStudState lastState = gameApiToFiveCardStudState(lastApiState,Color.values()[playerIds.indexOf(lastMovePlayerId)], playerIds);
-	  System.out.println("getExpectedMove ");
-	  System.out.println(lastApiState);
+	//  System.out.println("getExpectedMove ");
+	//  System.out.println(lastApiState);
 	  if(lastMove.contains(new Set(STAGE,PUTSMALLANTE)))
 		{
 		  System.out.println("PUTSMALLANTE logic");

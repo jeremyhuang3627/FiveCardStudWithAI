@@ -2,6 +2,9 @@ package org.fivecardstud.client;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.fivecardstud.client.Card.Rank;
 import org.game_api.GameApi.Container;
@@ -75,13 +78,13 @@ public class FiveCardStudPresenter {
 	     * bet method until betFinished is called or player's money is used up
 	     * 
 	     */
-	    void bet(int betAmt,int poolAmt);
+	    void bet(int betAmt,int poolAmt,String msg);
 	    
-	    void putBig();
+	    void putBig(String msg);
 	    
-	    void putSmall();
-	    void initDeal();
-	    void deal();
+	    void putSmall(String msg);
+	    void initDeal(String msg);
+	    void deal(String msg);
 	    void showWinner(String winner);
 	}
 	
@@ -96,6 +99,10 @@ public class FiveCardStudPresenter {
 	private List<String> playerIds;
 	private String lastMovePlayerId;
 	private int poolAmt;
+	private static final Set<String> AI_IDs = new HashSet<String>(Arrays.asList(
+		     new String[] {"42","43","44","45"}
+	));
+	
 	
 	public FiveCardStudPresenter(View view, Container container){
 		System.out.println("Constructing presenter");
@@ -104,17 +111,38 @@ public class FiveCardStudPresenter {
 		view.setPresenter(this);
 	}
 	
+	public static native void randomBet()/*-{
+		$wnd.setTimeout(function(){
+		  var btnArr = $doc.getElementsByClassName("gwt-Button");
+		  var ranIndex;
+		  if(btnArr.length>1){
+		  	//randomly click a button;
+		  	ranIndex = Math.floor(Math.random() * (btnArr.length - 1));
+		  	if(ranIndex != btnArr.length-1){
+		  		btnArr[ranIndex].click();
+		  	}
+		  }
+		},3000);
+	}-*/;
+	
+	public static native void clickOk()/*-{
+		$wnd.setTimeout(function(){
+		var btnArr = $doc.getElementsByClassName("gwt-Button");
+		btnArr[btnArr.length-1].click();
+		},3000);
+}-*/;
+	
 	public void updateUI(UpdateUI updateUI){
-		System.out.println("calling updateUI");
+		
 		playerIds = updateUI.getPlayerIds();
 		lastMovePlayerId = updateUI.getLastMovePlayerId();
+		System.out.println("presenter.updateUI lastMovePlayerId " + lastMovePlayerId);
 	    String yourPlayerId = updateUI.getYourPlayerId();
 	    int yourPlayerIndex = updateUI.getPlayerIndex(yourPlayerId);
 	    Color turnOfColor = null;
-	    
 	    if (updateUI.getState().isEmpty()) {
 	          // The G player sends the initial setup move.
-	    	System.out.println("Empty state. yourPlayerId " + yourPlayerId + " dealerId " + dealerId);
+	    //	System.out.println("Empty state. yourPlayerId " + yourPlayerId + " dealerId " + dealerId);
 	    	if(yourPlayerId.equals(dealerId)){
 	    		System.out.println("Sending initial moves");
 	    		sendInitialMove(playerIds);
@@ -127,7 +155,8 @@ public class FiveCardStudPresenter {
 	        turnOfColor = Color.values()[playerIds.indexOf(((SetTurn) operation).getPlayerId())];
 	      }
 	    }
-	    
+	    System.out.println("state");
+	    System.out.println(updateUI.getState());
 	    fiveCardStudState = fiveCardStudLogic.gameApiToFiveCardStudState(updateUI.getState(), turnOfColor, playerIds);
 	    if (updateUI.isViewer()) {
 	        view.setViewerState(fiveCardStudState.nextTurn,
@@ -147,111 +176,178 @@ public class FiveCardStudPresenter {
 	        return;
 	    }
 	    
-	    if (updateUI.isAiPlayer()) {
-	        // TODO: implement AI in a later HW!
-	        //container.sendMakeMove(..);
-	        return;
-	    }
-	    
-	    // must be player
-	    view.setPlayerState(fiveCardStudState.nextTurn,
-				fiveCardStudState.thisTurn,
-				fiveCardStudState.stage,
-				fiveCardStudState.dealer,
-				fiveCardStudState.big,
-				fiveCardStudState.small,
-				fiveCardStudState.bigAnte,
-				fiveCardStudState.smallAnte,
-				fiveCardStudState.currentCard,
-				fiveCardStudState.minimum,
-				fiveCardStudState.pot,
-				fiveCardStudState.players,
-				fiveCardStudState.cards,
-				yourPlayerId
-	    		);
-	    
 	    String stage = fiveCardStudState.stage;
-	  //  System.out.println("thisTurn " + fiveCardStudState.thisTurn + " playerIds " + playerIds);
+	    System.out.println("thisTurn " + fiveCardStudState.thisTurn + " playerIds " + playerIds);
 	    String playerString = Color.values()[playerIds.indexOf(fiveCardStudState.thisTurn)].toString();
-	  //  System.out.println("playerString " + playerString + " stage " + stage );
-	    if(yourPlayerId.equals(fiveCardStudState.nextTurn)){
-	    		System.out.println("stage is " + stage);
-		    switch(stage){
-		    case PUTBIGANTE:
-		    		initDeal();
-		    		break;
-		    case BETEND:
-		    		if( fiveCardStudState.currentCard >=24){
-		    			endGame();
-		    		}else{
-		    			deal();
-		    		}
-		    		break;
-		    case DEAL:
-		    case BET:
-		    		bet(betAmt);
-		    		break;
-		    case PUTSMALLANTE:
-		    		putBig();
-		    		break;
-		    case ASSIGNANTE:
-		    		putSmall();
-		    		break;
-		    case INITDEAL:
-		    		bet(betAmt);
-		    		break;
-		    case ENDGAME:
-		    		showWinner((String)updateUI.getState().get(WINNER));
-		    		break;
+	    System.out.println("playerString " + playerString + " stage " + stage );
+	    //AI_IDs.contains(yourPlayerId)
+	   if (AI_IDs.contains(yourPlayerId)) {
+	        //container.sendMakeMove(..);
+		   view.setPlayerState(fiveCardStudState.nextTurn,
+					fiveCardStudState.thisTurn,
+					fiveCardStudState.stage,
+					fiveCardStudState.dealer,
+					fiveCardStudState.big,
+					fiveCardStudState.small,
+					fiveCardStudState.bigAnte,
+					fiveCardStudState.smallAnte,
+					fiveCardStudState.currentCard,
+					fiveCardStudState.minimum,
+					fiveCardStudState.pot,
+					fiveCardStudState.players,
+					fiveCardStudState.cards,
+					yourPlayerId
+		    );
+		   
+		   System.out.println("yourPlayerId " + yourPlayerId + " fiveCardStudState.nextTurn " + fiveCardStudState.nextTurn);
+		    	if(yourPlayerId.equals(fiveCardStudState.nextTurn)){
+		    		System.out.println("entering AI " + stage);
+		    		String AI_msg = "AI Turn";
+			    switch(stage){
+			    case PUTBIGANTE:
+			    		initDeal(AI_msg);
+			    		clickOk();
+			    		break;
+			    case BETEND:
+			    		if( fiveCardStudState.currentCard >=24){
+			    			endGame();
+			    			clickOk();
+			    		}else{
+			    			deal(AI_msg);
+			    			clickOk();
+			    		}
+			    		break;
+			    case DEAL:
+			    case BET:
+			    		bet(betAmt,AI_msg);
+			    		randomBet();
+			    		break;
+			    case PUTSMALLANTE:
+			    		putBig(AI_msg);
+			    		clickOk();
+			    		break;
+			    case ASSIGNANTE:
+			    		putSmall(AI_msg);
+			    		clickOk();
+			    		break;
+			    case INITDEAL:
+			    		bet(betAmt,"AI Turn");
+			    		clickOk();
+			    		break;
+			    case ENDGAME:
+			    		showWinner((String)updateUI.getState().get(WINNER));
+			    		clickOk();
+			    		break;
+			    }
+		    }
+		    	
+		    	
+		    	
+	    }else{
+	    
+		    // must be player
+		    view.setPlayerState(fiveCardStudState.nextTurn,
+					fiveCardStudState.thisTurn,
+					fiveCardStudState.stage,
+					fiveCardStudState.dealer,
+					fiveCardStudState.big,
+					fiveCardStudState.small,
+					fiveCardStudState.bigAnte,
+					fiveCardStudState.smallAnte,
+					fiveCardStudState.currentCard,
+					fiveCardStudState.minimum,
+					fiveCardStudState.pot,
+					fiveCardStudState.players,
+					fiveCardStudState.cards,
+					yourPlayerId
+		    		);
+		    
+		   
+		    if(yourPlayerId.equals(fiveCardStudState.nextTurn)){
+		    		System.out.println("stage is " + stage);
+		    		String player_msg = "Your Turn";
+			    switch(stage){
+			    case PUTBIGANTE:
+			    		initDeal(player_msg);
+			    		break;
+			    case BETEND:
+			    		if( fiveCardStudState.currentCard >=24){
+			    			endGame();
+			    		}else{
+			    			deal(player_msg);
+			    		}
+			    		break;
+			    case DEAL:
+			    case BET:
+			    		bet(betAmt,player_msg);
+			    		break;
+			    case PUTSMALLANTE:
+			    		putBig(player_msg);
+			    		break;
+			    case ASSIGNANTE:
+			    		putSmall(player_msg);
+			    		break;
+			    case INITDEAL:
+			    		bet(betAmt,player_msg);
+			    		break;
+			    case ENDGAME:
+			    		showWinner((String)updateUI.getState().get(WINNER));
+			    		break;
+			    }
 		    }
 	    }
 	}
 	
 	private void sendInitialMove(List<String> playerIds) {
+		System.out.println("in presenter sendInitialMove calling container.sendMakeMove");
 	    container.sendMakeMove(fiveCardStudLogic.getInitialMove(playerIds,dealerId));
 	}
 
-	public void bet(int amt){
+	public void bet(int amt,String msg){
 			betAmt += amt;
 			poolAmt += betAmt;
-			view.bet(betAmt,poolAmt);
+			view.bet(betAmt, poolAmt, msg);
 	}
 	
 	public void betFinished(){
+		System.out.println("in presenter betFinished() calling container.sendMakeMove");
 		container.sendMakeMove(fiveCardStudLogic.betMove(fiveCardStudState, betAmt, playerIds, lastMovePlayerId));
 		betAmt = 0;
 	}
 	
-	private void deal(){
-		view.deal();
+	private void deal(String msg){
+		view.deal(msg);
 	}
 	
 	public void dealFinished(){
+		System.out.println("in presenter dealFinished() calling container.sendMakeMove");
 		container.sendMakeMove(fiveCardStudLogic.dealMove(fiveCardStudState, dealerId, playerIds, lastMovePlayerId));
 	}
 	
-	private void initDeal(){
-		view.initDeal();
+	private void initDeal(String msg){
+		view.initDeal(msg);
 	}
 	
 	public void initDealFinished(){
+		System.out.println("in presenter initDealFinished() calling container.sendMakeMove");
 		container.sendMakeMove(fiveCardStudLogic.initDealMove(fiveCardStudState, dealerId, playerIds, lastMovePlayerId));
 	}
 	
-	private void putBig(){
-		view.putBig();
+	private void putBig(String msg){
+		view.putBig(msg);
 	}
 	
-	private void putSmall(){
-		view.putSmall();
+	private void putSmall(String msg){
+		view.putSmall(msg);
 	}
 	
 	public void putBigFinished(int big){
+		System.out.println("in presenter putBigFinished() calling container.sendMakeMove");
 		container.sendMakeMove(fiveCardStudLogic.putBigAnteMove(fiveCardStudState, big, playerIds, lastMovePlayerId));
 	}
 	
 	public void putSmallFinished(int small){
-		System.out.println("putsmallfinished " + lastMovePlayerId);
+		System.out.println("in presenter putSmallFinished() calling container.sendMakeMove");
 		container.sendMakeMove(fiveCardStudLogic.putSmallAnteMove(fiveCardStudState, small, playerIds, lastMovePlayerId));
 	}
 	
@@ -261,5 +357,6 @@ public class FiveCardStudPresenter {
 	
 	private void showWinner(String winner){
 		view.showWinner(winner);
+		
 	}
 }

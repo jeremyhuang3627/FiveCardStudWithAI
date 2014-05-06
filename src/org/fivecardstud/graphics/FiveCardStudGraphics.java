@@ -8,6 +8,8 @@ import org.fivecardstud.client.Card;
 import org.fivecardstud.client.FiveCardStudPresenter;
 import org.fivecardstud.client.Card.Rank;
 import org.fivecardstud.client.FiveCardStudAnimation;
+import org.game_api.GameApi;
+import org.game_api.GameApi.IteratingPlayerContainer;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -39,6 +41,8 @@ import com.allen_sauer.gwt.dnd.client.PickupDragController;
 import com.allen_sauer.gwt.dnd.client.drop.SimpleDropController;
 import com.googlecode.mgwt.ui.client.widget.touch.TouchPanel;
 import com.google.gwt.event.shared.EventHandler;
+import com.google.gwt.user.client.Timer;
+import java.lang.Thread;
 
 public class FiveCardStudGraphics extends Composite implements FiveCardStudPresenter.View{
 	public interface FiveCardStudGraphicsUiBinder extends UiBinder<Widget,FiveCardStudGraphics>{
@@ -76,6 +80,9 @@ public class FiveCardStudGraphics extends Composite implements FiveCardStudPrese
   private String yId = "46";
   private boolean opendeck = false;
   private PopUpMessages msg = (PopUpMessages)GWT.create(PopUpMessages.class);
+  private IteratingPlayerContainer _container;
+  private String lastPlayer;
+  
   
   List<String> chipValues = Lists.newArrayList();
   {
@@ -87,7 +94,7 @@ public class FiveCardStudGraphics extends Composite implements FiveCardStudPrese
     chipValues.add(msg.okMsg());
   }
   
-  public FiveCardStudGraphics() {
+  public FiveCardStudGraphics(IteratingPlayerContainer container) {
 	CardImages cardImages = GWT.create(CardImages.class);
 	this.cardImageSupplier = new CardImageSupplier(cardImages);
 	this.gameSounds = GWT.create(GameSound.class);
@@ -98,7 +105,7 @@ public class FiveCardStudGraphics extends Composite implements FiveCardStudPrese
 		pieceDown.addSource(gameSounds.pieceDownWav().getSafeUri()
 	                	.asString(), AudioElement.TYPE_WAV);
 	}
-	
+	_container = container;
 	FiveCardStudGraphicsUiBinder uiBinder = GWT.create(FiveCardStudGraphicsUiBinder.class);
 	initWidget(uiBinder.createAndBindUi(this));
 	CardImage cardimage = CardImage.Factory.getBackOfCardImage();
@@ -141,8 +148,22 @@ public class FiveCardStudGraphics extends Composite implements FiveCardStudPrese
 	  		int pot
 		  )
   {
-	  String player = getPlayerNameFromId(Integer.parseInt(nextTurn));
-	  gameInfo.setText(msg.roundMsg() + " " + translatePlayerStr(player));
+	  System.out.println("setRoundInfo thisTurn " + thisTurn + " nextTurn " + nextTurn);
+	  final String _nextTurn = nextTurn;
+		final String _thisTurn = thisTurn;
+		String player = getPlayerNameFromId(Integer.parseInt(nextTurn));
+		gameInfo.setText(msg.roundMsg() + " " + translatePlayerStr(player));
+		if(!thisTurn.equals(lastPlayer)){
+		
+	  	Timer t = new Timer(){
+	  		public void run(){
+	  	    System.out.println("Calling updateUi thisTurn is "  + _thisTurn +" nextTurn is " + _nextTurn);
+	  		_container.updateUi(_nextTurn);
+	  		}
+	  	};
+	  	t.schedule(5000);
+	    lastPlayer = thisTurn;
+	  } 
   }
   
   private String getPlayerNameFromId(int id)
@@ -329,7 +350,7 @@ public class FiveCardStudGraphics extends Composite implements FiveCardStudPrese
   		String yourPlayerId
 		  )
   {
-	System.out.println("set player state ");
+	System.out.println("setPlayerState thisTurn " + thisTurn + " nextTurn " + nextTurn);
 	setRoundInfo(nextTurn,thisTurn,stage,dealer,big,small,bigAnte,smallAnte,currentCard,minimum,pot);
     List<Card> handW = cardIndexesToCards((List<Integer>)((Map<String,Object>)players.get("W")).get("hand"),cards);
     List<Card> handB = cardIndexesToCards((List<Integer>)((Map<String,Object>)players.get("B")).get("hand"),cards);
@@ -359,28 +380,24 @@ public class FiveCardStudGraphics extends Composite implements FiveCardStudPrese
   }
   
   @Override
-  public void bet(int amt,int poolAmt)
+  public void bet(int amt,int poolAmt,String _msg)
   {	
   	  poolAmt = amt + poolAmt;
-  	  new PopupChoices(msg.betMsg(),chipValues,
+  	  new PopupChoices(msg.betMsg() + " " + _msg,chipValues,
   	  	new PopupChoices.OptionChosen(){
   	  		@Override
   	  		public void optionChosen(String option){
-  	  			if(!option.equals(msg.okMsg())){
-  	  				presenter.bet(Integer.parseInt(option));
-  	  			}else{
-  	  				presenter.betFinished();
-  	  			}
+  	  			presenter.betFinished();
   	  		}
   	  	}
   	  ).center();
   }
   
   @Override
-  public void putBig(){
+  public void putBig(String _msg){
 	  List<String> option = Lists.newArrayList();
 	  option.add(msg.okMsg());
-	  new PopupChoices(msg.putBigMsg(50),option,
+	  new PopupChoices(msg.putBigMsg(50) + _msg,option,
 		  	  	new PopupChoices.OptionChosen(){
 		  	  		@Override
 		  	  		public void optionChosen(String option){
@@ -393,10 +410,10 @@ public class FiveCardStudGraphics extends Composite implements FiveCardStudPrese
   }
   
   @Override
-  public void putSmall(){
+  public void putSmall(String _msg){
 	  List<String> option = Lists.newArrayList();
 	  option.add(msg.okMsg());
-	  new PopupChoices(msg.putSmallMsg(25),option,
+	  new PopupChoices(msg.putSmallMsg(25) + _msg,option,
 		  	  	new PopupChoices.OptionChosen(){
 		  	  		@Override
 		  	  		public void optionChosen(String option){
@@ -409,10 +426,10 @@ public class FiveCardStudGraphics extends Composite implements FiveCardStudPrese
   }
   
   @Override
-  public void deal(){
+  public void deal(String _msg){
 	  List<String> option = Lists.newArrayList();
 	  option.add(msg.okMsg());
-	  new PopupChoices(msg.dealMsg(),option,
+	  new PopupChoices(msg.dealMsg() + msg,option,
 		  	  	new PopupChoices.OptionChosen(){
 		  	  		@Override
 		  	  		public void optionChosen(String option){
@@ -420,15 +437,14 @@ public class FiveCardStudGraphics extends Composite implements FiveCardStudPrese
 		  	  				presenter.dealFinished();
 		  	  			}
 		  	  		}
-		  	  	}
-		  	  ).center();
+		  	  	}).center();
   }
   
   @Override
-  public void initDeal(){
+  public void initDeal(String _msg){
 	  List<String> option = Lists.newArrayList();
 	  option.add(msg.okMsg());
-	  new PopupChoices(msg.initDealMsg(),option,
+	  new PopupChoices(msg.initDealMsg() + _msg,option,
 		  	  	new PopupChoices.OptionChosen(){
 		  	  		@Override
 		  	  		public void optionChosen(String option){
@@ -450,7 +466,7 @@ public class FiveCardStudGraphics extends Composite implements FiveCardStudPrese
 		  	  		@Override
 		  	  		public void optionChosen(String option){
 		  	  			if(option == "OK" || option == "\u597D\u7684"){
-		  	  				presenter.initDealFinished();
+		  	  				//presenter.initDealFinished();
 		  	  			}
 		  	  		}
 		  	  	}
