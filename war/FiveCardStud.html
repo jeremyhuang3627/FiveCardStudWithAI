@@ -5,6 +5,32 @@
     <meta name="viewport" content="width=device-width; initial-scale=1.0; user-scalable=no" />
     <title>FiveCardStud game</title>
     <script type="text/javascript" language="javascript" src="fivecardstud/fivecardstud.nocache.js"></script>
+    <script>
+			function scaleBody() {
+			  var myGameWidth = 800;
+			  var myGameHeight = 800;
+			  var scaleX = window.innerWidth / myGameWidth;
+			  var scaleY = window.innerHeight / myGameHeight;
+			  var scale = Math.min(scaleX, scaleY);
+			  var transformString = "scale(" + scale + "," + scale + ")";
+			  document.body.style.transform = transformString;
+			  document.body.style['-o-transform'] = transformString;
+			  document.body.style['-webkit-transform'] = transformString;
+			  document.body.style['-moz-transform'] = transformString;
+			  document.body.style['-ms-transform'] = transformString;
+			  var transformOriginString = "0 0 0";
+			  document.body.style['transform-origin'] = transformOriginString;
+			  document.body.style['-o-transform-origin'] = transformOriginString;
+			  document.body.style['-webkit-transform-origin'] = transformOriginString;
+			  document.body.style['-moz-transform-origin'] = transformOriginString;
+			  document.body.style['-ms-transform-origin'] = transformOriginString;
+			}
+			window.onresize = scaleBody;
+			scaleBody();
+			window.onorientationchange = scaleBody;
+			document.addEventListener("orientationchange", scaleBody);
+			scaleBody();
+			</script>
     <style>
   .imgContainer {
     overflow:hidden;
